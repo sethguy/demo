@@ -13,7 +13,6 @@ var database = {
             job: 'Designer',
             friends: []
         },
-
         2: {
             id: 2,
             name: 'Jane Brown',
@@ -21,7 +20,6 @@ var database = {
             job: 'Designer',
             friends: []
         },
-
         3: {
             id: 3,
             name: 'Margaret Johnson',
@@ -29,7 +27,6 @@ var database = {
             job: 'QA',
             friends: []
         },
-
         4: {
             id: 4,
             name: 'Patti Robertson',
@@ -46,7 +43,7 @@ var database = {
  *
  * Note: you don't have to use this function, but it may be helpful.
  */
-function isPerson (person) {
+function isPerson(person) {
     return (
         typeof person === 'object' &&
         'name' in person &&
@@ -65,7 +62,7 @@ function isPerson (person) {
  *
  * Note: you don't have to use this function, but it may be helpful.
  */
-function addPersonToDatabase (person) {
+function addPersonToDatabase(person) {
     if (!isPerson(person)) {
         throw new Error('Expected person to be a valid person, but got ' + JSON.stringify(person));
     }
@@ -79,6 +76,27 @@ function addPersonToDatabase (person) {
     }
 
     database.people[person.id] = person;
+
+    return person;
+}
+
+function getNewPersonId() {
+
+    var people = database.people
+
+    var preId = Object.keys(people).map(function(key) {
+        return people[key]
+    }).length;
+
+    while (Object.keys(people).map(function(key) {
+            return people[key]
+        }).map(function(person) {
+            return person.id;
+        }).indexOf(preId) > -1) {
+        preId++
+    }
+
+    return preId
 }
 
 // Load the express library and the body parsing middleware, body-parser
@@ -92,7 +110,7 @@ var app = express();
 app.use(bodyParser.json());
 
 // Logging middleware.
-app.use(function (request, response, next) {
+app.use(function(request, response, next) {
     // The HTTP method, request URL, and originating IP.
     var method = request.method,
         URL = request.originalUrl,
@@ -109,29 +127,37 @@ app.use(function (request, response, next) {
  * POST /people/
  * Creates a new Person in the database.
  */
-app.post('/people', function (request, response, next) {
-console.log('in post',request.body)
+app.post('/people', function(request, response, next) {
 
+    try {
 
+        var requestContentType = request.get('Content-Type');
 
+        if (requestContentType == "application/json") {
 
-    return response.json(
- 
+            console.log("here", requestContentType == "application/json")
 
+            var person = request.body;
+            var personWithId = Object.assign(person, { id: getNewPersonId() })
+            var createdPerson = addPersonToDatabase(personWithId)
+            return response.status(201).json(createdPerson);
 
-    );
+        } else {
+            throw new Error('Wrong Content-Type Expected , "application/json" , received :: ' + requestContentType);
+        }
 
-
-
+    } catch (err) {
+        return response.status(404).json({ error: err.message });
+    }
 });
 
 /**
  * GET /people/
  * Returns a list of all of the people in the database.
  */
-app.get('/people', function (request, response, next) {
+app.get('/people', function(request, response, next) {
     return response.json(
-        Object.keys(database.people).map(function (id) {
+        Object.keys(database.people).map(function(id) {
             return database.people[id]
         })
     );
@@ -141,7 +167,7 @@ app.get('/people', function (request, response, next) {
  * GET /people/:id
  * Returns the person specified by id.
  */
-app.get('/people/:id', function (request, response, next) {
+app.get('/people/:id', function(request, response, next) {
     var id = request.params.id;
     var person = database.people[id];
 
@@ -154,7 +180,7 @@ app.get('/people/:id', function (request, response, next) {
 });
 
 // Middleware to catch any 404s
-app.use(function (request, response, next) {
+app.use(function(request, response, next) {
     var error404 = new Error('Not Found');
     error404.status = 404;
     error404.message = 'The endpoint ' + request.originalUrl + ' does not exist.';
@@ -162,7 +188,7 @@ app.use(function (request, response, next) {
 });
 
 // Error handling middleware
-app.use(function (error, request, response, next) {
+app.use(function(error, request, response, next) {
     var status = error.status || 500,
         message = error.message || 'Error';
     logger(request.method, request.originalUrl, status, message);
