@@ -83,16 +83,15 @@ function addPersonToDatabase(person) {
 function getNewPersonId() {
 
     var people = database.people
+    // get list of people ids
+    var peopleIdList = Object.keys(people).map(function(key) {
+        return people[key].id
+    })
+    // use length of list for a new "suggested"  id
+    var preId = peopleIdList.length;
 
-    var preId = Object.keys(people).map(function(key) {
-        return people[key]
-    }).length;
-
-    while (Object.keys(people).map(function(key) {
-            return people[key]
-        }).map(function(person) {
-            return person.id;
-        }).indexOf(preId) > -1) {
+    // make sure suggested id is not in there already by  increasing suggested id by 1 in a while till preId is a new id
+    while (peopleIdList.indexOf(preId) > -1) {
         preId++
     }
 
@@ -134,9 +133,6 @@ app.post('/people', function(request, response, next) {
         var requestContentType = request.get('Content-Type');
 
         if (requestContentType == "application/json") {
-
-            console.log("here", requestContentType == "application/json")
-
             var person = request.body;
             var personWithId = Object.assign(person, { id: getNewPersonId() })
             var createdPerson = addPersonToDatabase(personWithId)
