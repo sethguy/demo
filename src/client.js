@@ -6,7 +6,7 @@ var http = require('http'),
     fs = require("fs"),
     RxHttpRequest = require('rx-http-request').RxHttpRequest,
 
-        Degrees = require('./degree').degrees,
+    Degrees = require('./degree').degrees,
 
 
 
@@ -104,25 +104,14 @@ async.waterfall(
 
             peopleList = Object.keys(peopleJson).map((key) => peopleJson[key])
 
-            var dex = Math.floor(Math.random() * peopleList.length)
+            Degrees.demo(peopleList);
 
-            var dex2 = Math.floor(Math.random() * peopleList.length)
-
-            var p1 = peopleList[dex]
-
-            var p2 = peopleList[dex2]
-
-            console.log(p1, p2)
-
-           var  degreesBetween = Degrees.getDegreesBetween(p1, p2,peopleList);
-
-                console.log(  "get degree", degreesBetween)
             var batchPeoplePostUrl = baseURI + "/people/batch";
 
             var options = Object.assign(baseOptions, {
                 body: peopleJson,
                 json: true, // Automatically stringifies the body to JSON ,
-                uri: batchPeoplePostUrl
+                url: batchPeoplePostUrl
             })
 
             // post request to a batch people post endpoint

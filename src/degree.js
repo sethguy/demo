@@ -49,6 +49,25 @@ module.exports.degrees = {
         }
 
         return count
+    },
+
+    demo: function(peopleList) {
+
+        var dex = Math.floor(Math.random() * peopleList.length)
+
+        var dex2 = Math.floor(Math.random() * peopleList.length)
+
+        var p1 = peopleList[dex]
+
+        var p2 = peopleList[dex2]
+
+        console.log("person 1", p1)
+
+        console.log("person 2", p2)
+
+        var degreesBetween = this.getDegreesBetween(p1, p2, peopleList);
+
+        console.log("degrees of seperation beteen  " + p1.name + " and " + p2.name + " :: " + degreesBetween);
     }
 
 }
