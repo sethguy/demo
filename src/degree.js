@@ -43,14 +43,13 @@ var degrees = {
 
             count++
             set1 = this.getFriends(set1, peopleList);
-          
             if (count > peopleList.length * 2) {
                 count = -1;
                 break
             }
 
         }
-        return { count: count }
+        return { count: count  }
     },
 
     demo: function(peopleList) {
@@ -72,7 +71,7 @@ var degrees = {
 
         var degreesBetween = this.getDegreesBetween(p1, p2, peopleList);
 
-        console.log("degrees of seperation beteen  " + p1.name + " and " + p2.name + " :: " + degreesBetween.count);
+        console.log("degrees of seperation beteen  " + p1.name + " and " + p2.name + " :: " + (degreesBetween.count >-1 ? degreesBetween.count : " not connected"  ));
     }
 
 }
@@ -113,4 +112,4 @@ var list = [{
     friends: [3]
 }]
 
-degrees.demo(list);
+//degrees.demo(list);

@@ -1,6 +1,8 @@
 // Import the logger from constants.
 var logger = require('./constants').logger,
-    X_PROJECT_AUTHENTICATION_KEY = require('./constants').X_PROJECT_AUTHENTICATION_KEY;
+    X_PROJECT_AUTHENTICATION_KEY = require('./constants').X_PROJECT_AUTHENTICATION_KEY,
+    Degrees = require('./degree').degrees;
+
 
 // The simple in-memory database we'll be using.
 // People are indexed by their ids.
@@ -213,6 +215,45 @@ app.post('/people/batch', function(request, response, next) {
     } catch (err) {
         return response.status(404).json({ error: err.message });
     }
+});
+
+/**
+ * GET /degere/
+ * Returns the degrees of freedom between to people
+ */
+app.get('/degrees', function(request, response, next) {
+
+
+    try {
+        var peopleList = Object.keys(database.people).map((key) => database.people[key])
+
+        var query = request.query;
+
+        if (!query.source)
+            throw new Error(' no source id');
+
+        var personOne = peopleList.filter((person) => person.id == query.source)
+
+        if (personOne.length == 0)
+            throw new Error('source person not found');
+
+        if (!query.destination)
+            throw new Error(' no destination id');
+
+        var personTwo = peopleList.filter((person) => person.id == query.destination)
+
+        if (personTwo.length == 0)
+            throw new Error('destination person not found');
+
+        var degreeOfSeperation = Degrees.getDegreesBetween(personOne[0], personTwo[0], peopleList)
+
+        return response.status(200).json(degreeOfSeperation);
+
+    } catch (err) {
+        return response.status(404).json({ error: err.message });
+    }
+
+
 });
 
 /**

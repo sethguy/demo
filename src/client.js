@@ -5,9 +5,9 @@ var http = require('http'),
     base64 = require('base-64'),
     fs = require("fs"),
     RxHttpRequest = require('rx-http-request').RxHttpRequest,
-    // small degrees of seperation script
     Degrees = require('./degree').degrees,
 
+    // small degrees of seperation script
 
     // We use async.waterfall to simplify asynchronous requests which depend on the results
     // of previous requests. See https://github.com/caolan/async#waterfall for more details.
@@ -88,6 +88,38 @@ async.waterfall(
         },
         function(person, done) {
 
+            var PeoplePostUrl = baseURI + "/people";
+            // posting a new person
+            var options = Object.assign(baseOptions, {
+                body: {
+                    name: "seth",
+                    job: "software",
+                    age: 30,
+                    friends: []
+                },
+                json: true, // Automatically stringifies the body to JSON ,
+                url: PeoplePostUrl
+            })
+
+            // post request to a batch people post endpoint
+            request.post(options, function(err, response, body) {
+
+                var statusCode = response.statusCode;
+
+                console.log(" object created ", body)
+
+                // Handle errors
+                if (err || statusCode !== 201) {
+                    return done(err || new Error('Error: ' + statusCode), person);
+                }
+
+                // Parse the response.
+                return done(null, person);
+            });
+
+        },
+        function(person, done) {
+
             // using fs to read people .json 
             var peopleJsonFileString = fs.readFileSync('../people.json', { encoding: 'utf8' });
 
@@ -95,7 +127,7 @@ async.waterfall(
             var peopleJson = JSON.parse(peopleJsonFileString)
 
             peopleList = Object.keys(peopleJson).map((key) => peopleJson[key])
-            
+
             // degrees of seperatin demo
             Degrees.demo(peopleList);
 
@@ -111,11 +143,44 @@ async.waterfall(
             request.post(options, function(err, response, body) {
 
                 var statusCode = response.statusCode;
-                console.log(err, "batch error")
+                console.log(body, "batch post body response")
 
                 // Handle errors
                 if (err || statusCode !== 200) {
-                    console.log(body, "batch post body response")
+                    return done(err || new Error('Error: ' + statusCode), person);
+                }
+
+                // Parse the response.
+                return done(null, person, peopleJson);
+            });
+
+        },
+        function(person, peopleJson, done) {
+
+            var peopleList = Object.keys(peopleJson).map((key) => peopleJson[key])
+
+            var dex = Math.floor(Math.random() * peopleList.length)
+
+            var dex2 = Math.floor(Math.random() * peopleList.length)
+
+            var p1 = peopleList[dex]
+
+            var p2 = peopleList[dex2]
+
+            var dosUrl = baseURI + "/degrees/?source=" + p1.id + "&destination=" + p2.id;
+
+            var options = Object.assign(baseOptions, {
+                url: dosUrl
+            })
+
+            request.get(options, function(err, response, body) {
+
+                var statusCode = response.statusCode;
+
+                console.log(body, "DOS response")
+
+                // Handle errors
+                if (err || statusCode !== 200) {
                     return done(err || new Error('Error: ' + statusCode), person);
                 }
 
