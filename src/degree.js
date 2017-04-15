@@ -1,4 +1,4 @@
-module.exports.degrees = {
+var degrees = {
 
     getFriends: function(set, peopleList) {
 
@@ -35,25 +35,22 @@ module.exports.degrees = {
         var set1 = p1.friends;
 
         if (p1.id == p2.id)
-            return 0;
+            return { count: 0 };
 
         // if the second person is not in the current set of friends,
-        // keep looking for that second person in the friends of the people, in the current set of friend
-
+        // keep looking for that second person in the friends of the people, in the current set of friends
         while (set1.indexOf(p2.id) == -1) {
+
             count++
-
             set1 = this.getFriends(set1, peopleList);
-
-
-            if (count > peopleList * 2) {
+          
+            if (count > peopleList.length * 2) {
                 count = -1;
                 break
             }
 
         }
-
-        return count
+        return { count: count }
     },
 
     demo: function(peopleList) {
@@ -72,13 +69,16 @@ module.exports.degrees = {
         console.log("person 2", p2)
 
         // calculate DOS
+
         var degreesBetween = this.getDegreesBetween(p1, p2, peopleList);
 
-        console.log("degrees of seperation beteen  " + p1.name + " and " + p2.name + " :: " + degreesBetween);
+        console.log("degrees of seperation beteen  " + p1.name + " and " + p2.name + " :: " + degreesBetween.count);
     }
 
 }
 
+
+module.exports.degrees = degrees;
 
 
 var list = [{
@@ -89,26 +89,28 @@ var list = [{
     friends: [1]
 }, {
     id: 1,
-    name: 'Jane',
+    name: 'seth',
     age: 10,
     job: 'None',
-    friends: [0, 2]
+    friends: [0]
 }, {
     id: 2,
-    name: 'Joe',
+    name: 'bob',
     age: 10,
     job: 'None',
-    friends: [1, 3]
+    friends: [1]
 }, {
     id: 3,
-    name: 'Joe',
+    name: 'sally',
     age: 10,
     job: 'None',
-    friends: [2, 4]
+    friends: [2, 0]
 }, {
     id: 4,
-    name: 'Joe',
+    name: 'frank',
     age: 10,
     job: 'None',
     friends: [3]
 }]
+
+degrees.demo(list);
