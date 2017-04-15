@@ -43,7 +43,7 @@ var degrees = {
 
             count++
             set1 = this.getFriends(set1, peopleList);
-            if (count > peopleList.length * 2) {
+            if (count > peopleList.length) {
                 count = -1;
                 break
             }
