@@ -6,6 +6,10 @@ var http = require('http'),
     fs = require("fs"),
     RxHttpRequest = require('rx-http-request').RxHttpRequest,
 
+        Degrees = require('./degree').degrees,
+
+
+
 
 
     // We use async.waterfall to simplify asynchronous requests which depend on the results
@@ -28,6 +32,7 @@ var baseOptions = {
 var baseURI = 'http://localhost:' + port;
 
 // read people.json fil
+
 
 
 
@@ -89,14 +94,29 @@ async.waterfall(
                 return done(null, body);
             });
         },
-        function(person,done) {
+        function(person, done) {
 
             // using fs to read people .json 
             var peopleJsonFileString = fs.readFileSync('../people.json', { encoding: 'utf8' });
 
             // turning string from file read into json  object
             var peopleJson = JSON.parse(peopleJsonFileString)
-            
+
+            peopleList = Object.keys(peopleJson).map((key) => peopleJson[key])
+
+            var dex = Math.floor(Math.random() * peopleList.length)
+
+            var dex2 = Math.floor(Math.random() * peopleList.length)
+
+            var p1 = peopleList[dex]
+
+            var p2 = peopleList[dex2]
+
+            console.log(p1, p2)
+
+           var  degreesBetween = Degrees.getDegreesBetween(p1, p2,peopleList);
+
+                console.log(  "get degree", degreesBetween)
             var batchPeoplePostUrl = baseURI + "/people/batch";
 
             var options = Object.assign(baseOptions, {
@@ -104,7 +124,7 @@ async.waterfall(
                 json: true, // Automatically stringifies the body to JSON ,
                 uri: batchPeoplePostUrl
             })
-            
+
             // post request to a batch people post endpoint
             request.post(options, function(err, response, body) {
 
@@ -114,11 +134,11 @@ async.waterfall(
                 // Handle errors
                 if (err || statusCode !== 200) {
                     console.log(body, "batch post body response")
-                    return done(err || new Error('Error: ' + statusCode),person);
+                    return done(err || new Error('Error: ' + statusCode), person);
                 }
 
                 // Parse the response.
-                return done(null,person);
+                return done(null, person);
             });
 
         }
