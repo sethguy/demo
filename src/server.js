@@ -83,14 +83,16 @@ function addPersonToDatabase(person) {
 function getNewPersonId() {
 
     var people = database.people
+
     // get list of people ids
     var peopleIdList = Object.keys(people).map(function(key) {
         return people[key].id
     })
+
     // use length of list for a new "suggested"  id
     var preId = peopleIdList.length;
 
-    // make sure suggested id is not in there already by  increasing suggested id by 1 in a while till preId is a new id
+    // make sure suggested id is not in there already by  increasing suggested id by 1 in a while , till preId is a new id
     while (peopleIdList.indexOf(preId) > -1) {
         preId++
     }
@@ -120,6 +122,35 @@ app.use(function(request, response, next) {
 
     // Pass control to the next middleware.
     return next();
+});
+
+// Auth middleware.
+app.use(function(request, response, next) {
+    // The HTTP method, request URL, and originating IP.
+    var method = request.method,
+        URL = request.originalUrl,
+        ip = request.ip;
+
+    // grab headers from response object
+    var headers = request.headers;
+
+    //  looking for the "X-Project-Authentication" key in headers object
+    var authHeader = headers['x-project-authentication'];
+
+    if (authHeader) {
+        var baseBuff64String = new Buffer(authHeader, 'base64').toString('ascii')
+        console.log(baseBuff64String, "auth decode")
+        return next();
+    } else {
+        console.log("no authHeader")
+        return response.status(404).send("Request could not be autherized.");
+    }
+
+    // Log the info to console.
+    logger(method + ' ' + URL + ', ' + ip);
+
+    // Pass control to the next middleware.
+    // return next();
 });
 
 /**
