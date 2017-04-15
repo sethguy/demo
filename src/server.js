@@ -1,5 +1,6 @@
 // Import the logger from constants.
-var logger = require('./constants').logger;
+var logger = require('./constants').logger,
+    X_PROJECT_AUTHENTICATION_KEY = require('./constants').X_PROJECT_AUTHENTICATION_KEY;
 
 // The simple in-memory database we'll be using.
 // People are indexed by their ids.
@@ -89,7 +90,7 @@ function getNewPersonId() {
         return people[key].id
     })
 
-    // use length of list for a new "suggested"  id
+    // use length of list for a new "suggested" id
     var preId = peopleIdList.length;
 
     // make sure suggested id is not in there already by  increasing suggested id by 1 in a while , till preId is a new id
@@ -117,6 +118,8 @@ app.use(function(request, response, next) {
         URL = request.originalUrl,
         ip = request.ip;
 
+    console.log(request.headers)
+
     // Log the info to console.
     logger(method + ' ' + URL + ', ' + ip);
 
@@ -125,6 +128,7 @@ app.use(function(request, response, next) {
 });
 
 // Auth middleware.
+
 app.use(function(request, response, next) {
     // The HTTP method, request URL,originating IP and headers.
 
@@ -141,22 +145,23 @@ app.use(function(request, response, next) {
     if (authHeader) {
         decodeAuthHeader = new Buffer(authHeader, 'base64').toString('ascii')
     }
-    
-    var correctKey = (decodeAuthHeader==="this is terrible API key")
 
-    if ( decodeAuthHeader && correctKey ) {
+    var correctKey = (decodeAuthHeader === X_PROJECT_AUTHENTICATION_KEY)
+
+    if (decodeAuthHeader && correctKey) {
         return next();
     } else {
 
         var wrongKey = ""
         var noAuth = "";
-        if(!authHeader) noAuth = "no authentication header in request"
-        if(!correctKey) wrongKey = "Wrong Key";
-        console.log(" wrong key")
-        return response.status(404).send("Request could not be autherized."+noAuth+" "+wrongKey);
+        if (!authHeader) noAuth = "No authentication header in request."
+        if (!correctKey) wrongKey = "Wrong Key";
+        return response.status(404).send("Request could not be autherized." + noAuth + " " + wrongKey);
     }
 
 });
+
+
 
 /**
  * POST /people/
@@ -173,6 +178,33 @@ app.post('/people', function(request, response, next) {
             var personWithId = Object.assign(person, { id: getNewPersonId() })
             var createdPerson = addPersonToDatabase(personWithId)
             return response.status(201).json(createdPerson);
+
+        } else {
+            throw new Error('Wrong Content-Type Expected , "application/json" , received :: ' + requestContentType);
+        }
+
+    } catch (err) {
+        return response.status(404).json({ error: err.message });
+    }
+});
+
+app.post('/people/batch', function(request, response, next) {
+
+    try {
+
+        var requestContentType = request.get('Content-Type');
+
+        if (requestContentType == "application/json") {
+
+            var people = request.body;
+
+            Object.keys(people).map(function(key) {
+
+                return people[key];
+
+            }).forEach(addPersonToDatabase)
+
+            return response.status(200).json("people added");
 
         } else {
             throw new Error('Wrong Content-Type Expected , "application/json" , received :: ' + requestContentType);

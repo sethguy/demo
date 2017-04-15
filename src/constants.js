@@ -16,6 +16,10 @@ module.exports.logger = function logToConsole () {
     var now = new Date(),
         time = formatTime(now.getHours()) + ':' + formatTime(now.getMinutes()) + ':' + formatTime(now.getSeconds());
 
+
     // Log the message
     console.log(time, message);
 };
+
+// The port to run the server on.
+module.exports.X_PROJECT_AUTHENTICATION_KEY = "this is terrible API key";
