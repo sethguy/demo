@@ -5,11 +5,8 @@ var http = require('http'),
     base64 = require('base-64'),
     fs = require("fs"),
     RxHttpRequest = require('rx-http-request').RxHttpRequest,
-
+    // small degrees of seperation script
     Degrees = require('./degree').degrees,
-
-
-
 
 
     // We use async.waterfall to simplify asynchronous requests which depend on the results
@@ -30,11 +27,6 @@ var baseOptions = {
 
 // URI of the server.
 var baseURI = 'http://localhost:' + port;
-
-// read people.json fil
-
-
-
 
 async.waterfall(
     [
@@ -103,7 +95,8 @@ async.waterfall(
             var peopleJson = JSON.parse(peopleJsonFileString)
 
             peopleList = Object.keys(peopleJson).map((key) => peopleJson[key])
-
+            
+            // degrees of seperatin demo
             Degrees.demo(peopleList);
 
             var batchPeoplePostUrl = baseURI + "/people/batch";
@@ -132,7 +125,6 @@ async.waterfall(
 
         }
     ],
-
     function(err, person) {
         // Handle any errors from the requests.
         if (err) {

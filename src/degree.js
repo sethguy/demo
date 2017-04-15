@@ -4,6 +4,7 @@ module.exports.degrees = {
 
         var friends = [];
 
+        //with a set of people ids, give me all the friends of the people with those ids
         set.forEach(function(id) {
 
             var pfil = peopleList.filter(function(person) {
@@ -36,10 +37,14 @@ module.exports.degrees = {
         if (p1.id == p2.id)
             return 0;
 
+        // if the second person is not in the current set of friends,
+        // keep looking for that second person in the friends of the people, in the current set of friend
+
         while (set1.indexOf(p2.id) == -1) {
             count++
 
             set1 = this.getFriends(set1, peopleList);
+
 
             if (count > peopleList * 2) {
                 count = -1;
@@ -53,6 +58,7 @@ module.exports.degrees = {
 
     demo: function(peopleList) {
 
+        // get two random people from a list of people
         var dex = Math.floor(Math.random() * peopleList.length)
 
         var dex2 = Math.floor(Math.random() * peopleList.length)
@@ -65,6 +71,7 @@ module.exports.degrees = {
 
         console.log("person 2", p2)
 
+        // calculate DOS
         var degreesBetween = this.getDegreesBetween(p1, p2, peopleList);
 
         console.log("degrees of seperation beteen  " + p1.name + " and " + p2.name + " :: " + degreesBetween);
