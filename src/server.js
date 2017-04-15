@@ -126,31 +126,36 @@ app.use(function(request, response, next) {
 
 // Auth middleware.
 app.use(function(request, response, next) {
-    // The HTTP method, request URL, and originating IP.
+    // The HTTP method, request URL,originating IP and headers.
+
     var method = request.method,
         URL = request.originalUrl,
-        ip = request.ip;
-
-    // grab headers from response object
-    var headers = request.headers;
+        ip = request.ip,
+        headers = request.headers;
 
     //  looking for the "X-Project-Authentication" key in headers object
     var authHeader = headers['x-project-authentication'];
 
+    var decodeAuthHeader = null;
+
     if (authHeader) {
-        var baseBuff64String = new Buffer(authHeader, 'base64').toString('ascii')
-        console.log(baseBuff64String, "auth decode")
+        decodeAuthHeader = new Buffer(authHeader, 'base64').toString('ascii')
+    }
+    
+    var correctKey = (decodeAuthHeader==="this is terrible API key")
+
+    if ( decodeAuthHeader && correctKey ) {
         return next();
     } else {
-        console.log("no authHeader")
-        return response.status(404).send("Request could not be autherized.");
+
+        var wrongKey = ""
+        var noAuth = "";
+        if(!authHeader) noAuth = "no authentication header in request"
+        if(!correctKey) wrongKey = "Wrong Key";
+        console.log(" wrong key")
+        return response.status(404).send("Request could not be autherized."+noAuth+" "+wrongKey);
     }
 
-    // Log the info to console.
-    logger(method + ' ' + URL + ', ' + ip);
-
-    // Pass control to the next middleware.
-    // return next();
 });
 
 /**
