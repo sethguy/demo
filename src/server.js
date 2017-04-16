@@ -4,6 +4,12 @@ var logger = require('./constants').logger,
     Degrees = require('./degree').degrees;
 
 
+var Mongo = require('mongodb'),
+    assert = require('assert');
+var MongoClient = Mongo.MongoClient;
+var ObjectId = require('mongodb').ObjectID;
+
+
 // The simple in-memory database we'll be using.
 // People are indexed by their ids.
 // ids don't need to be in order.

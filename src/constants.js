@@ -1,5 +1,5 @@
 // The port to run the server on.
-module.exports.port = 9000;
+module.exports.port = 80;
 
 // Log messages to the console. Prepends the current time.
 module.exports.logger = function logToConsole () {

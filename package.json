@@ -2,12 +2,16 @@
     "name": "intern-work-sample",
     "version": "0.9.0",
     "main": "server.js",
+    "scripts": {
+        "start": "node src/server.js"
+    },
     "dependencies": {
         "async": "^1.5.2",
         "base-64": "^0.1.0",
         "body-parser": "^1.15.0",
         "express": "^4.13.4",
         "fs": "0.0.1-security",
+        "mongodb": "^2.2.25",
         "request": "^2.69.0"
     }
 }
