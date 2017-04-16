@@ -4,7 +4,6 @@ var http = require('http'),
     X_PROJECT_AUTHENTICATION_KEY = require('./constants').X_PROJECT_AUTHENTICATION_KEY,
     base64 = require('base-64'),
     fs = require("fs"),
-    RxHttpRequest = require('rx-http-request').RxHttpRequest,
     Degrees = require('./degree').degrees,
 
     // small degrees of seperation script
