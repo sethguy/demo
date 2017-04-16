@@ -126,7 +126,6 @@ async.waterfall(
             var peopleJson = JSON.parse(peopleJsonFileString)
 
             peopleList = Object.keys(peopleJson).map((key) => peopleJson[key])
-
             // degrees of seperatin demo
             Degrees.demo(peopleList);
 
