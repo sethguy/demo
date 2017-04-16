@@ -1,5 +1,6 @@
 var http = require('http'),
     port = require('./constants').port,
+        ip = require('./constants').ip,
     logger = require('./constants').logger,
     X_PROJECT_AUTHENTICATION_KEY = require('./constants').X_PROJECT_AUTHENTICATION_KEY,
     base64 = require('base-64'),
@@ -25,7 +26,7 @@ var baseOptions = {
 };
 
 // URI of the server.
-var baseURI = 'http://localhost:' + port;
+var baseURI = 'http://'+ip+':' + port;
 
 async.waterfall(
     [
@@ -35,7 +36,7 @@ async.waterfall(
                 baseOptions, { url: baseURI + '/people' }
             );
 
-            // GET http://localhost:9000/people
+            // GET http://ip:9000/people
             request.get(options, function(err, response, body) {
                 var statusCode = response.statusCode;
                 console.log(err, "get people response", body)
@@ -67,7 +68,7 @@ async.waterfall(
             );
 
             // Get more info about the peron using the /person/:id endpoint.
-            // GET http://localhost:9000/people/:id
+            // GET http://ip:9000/people/:id
             request.get(options, function(err, response, body) {
                 var statusCode = response.statusCode;
 

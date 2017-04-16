@@ -1,5 +1,6 @@
 // The port to run the server on.
 module.exports.port = 80;
+module.exports.ip = "192.168.99.100";
 
 // Log messages to the console. Prepends the current time.
 module.exports.logger = function logToConsole () {
