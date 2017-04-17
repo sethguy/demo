@@ -62,9 +62,12 @@ async.waterfall(
             var index = Math.floor(Math.random() * allPeople.length),
                 person = allPeople[index];
 
+                if(!person || !person._id)
+                    return done( new Error('Error: no user '));
+
             // Options for the request.
             var options = Object.assign({},
-                baseOptions, { url: baseURI + '/people/' + person.id }
+                baseOptions, { url: baseURI + '/people/' + person._id }
             );
 
             // Get more info about the peron using the /person/:id endpoint.
@@ -150,41 +153,7 @@ async.waterfall(
                 }
 
                 // Parse the response.
-                return done(null, person, peopleJson);
-            });
-
-        },
-        function(person, peopleJson, done) {
-
-            var peopleList = Object.keys(peopleJson).map((key) => peopleJson[key])
-
-            var dex = Math.floor(Math.random() * peopleList.length)
-
-            var dex2 = Math.floor(Math.random() * peopleList.length)
-
-            var p1 = peopleList[dex]
-
-            var p2 = peopleList[dex2]
-
-            var dosUrl = baseURI + "/degrees/?source=" + p1.id + "&destination=" + p2.id;
-
-            var options = Object.assign(baseOptions, {
-                url: dosUrl
-            })
-
-            request.get(options, function(err, response, body) {
-
-                var statusCode = response.statusCode;
-
-                console.log(body, "DOS response")
-
-                // Handle errors
-                if (err || statusCode !== 200) {
-                    return done(err || new Error('Error: ' + statusCode), person);
-                }
-
-                // Parse the response.
-                return done(null, person);
+                return done(null, person, body);
             });
 
         }

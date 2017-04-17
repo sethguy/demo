@@ -2,9 +2,15 @@
 module.exports.port = 80;
 module.exports.ip = "192.168.99.100";
 
+// mongoConnectionUrlString
+module.exports.mongoUrl = 'mongodb://' + "mongodb" + ':27017/peopleDemo';
+
+module.exports.peopleCollection = "poeple";
+
+
 // Log messages to the console. Prepends the current time.
-module.exports.logger = function logToConsole () {
-    function formatTime (number) {
+module.exports.logger = function logToConsole() {
+    function formatTime(number) {
         if (number < 10)
             return '0' + number;
         return number;

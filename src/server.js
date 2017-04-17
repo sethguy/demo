@@ -1,7 +1,9 @@
 // Import the logger from constants.
 var logger = require('./constants').logger,
     X_PROJECT_AUTHENTICATION_KEY = require('./constants').X_PROJECT_AUTHENTICATION_KEY,
-    Degrees = require('./degree').degrees;
+    Degrees = require('./degree').degrees,
+    mongoUrl = require('./constants').mongoUrl;
+peopleCollection = require('./constants').peopleCollection;
 
 
 var Mongo = require('mongodb'),
@@ -175,6 +177,18 @@ app.use(function(request, response, next) {
  * POST /people/
  * Creates a new Person in the database.
  */
+
+var sertPerson = function(db, person, callback) {
+        // Get the documents collection
+        var collection = db.collection(peopleCollection);
+        // Find some documents
+        collection.insert([
+            person,
+        ], function(err, result) {
+            callback(result);
+        });
+    } //sertPerson
+
 app.post('/people', function(request, response, next) {
 
     try {
@@ -183,9 +197,16 @@ app.post('/people', function(request, response, next) {
 
         if (requestContentType == "application/json") {
             var person = request.body;
-            var personWithId = Object.assign(person, { id: getNewPersonId() })
-            var createdPerson = addPersonToDatabase(personWithId)
-            return response.status(201).json(createdPerson);
+            MongoClient.connect(mongoUrl, function(err, db) {
+                if (err) throw err;
+                //console.log("Connected correctly to server");
+                sertPerson(db, person, function(docs) {
+                    var result = JSON.stringify(docs);
+                    console.log(" result ", result)
+                    response.status(201).json(docs.ops[0]);
+                    db.close();
+                }); //insert method
+            }); //mongo connect
 
         } else {
             throw new Error('Wrong Content-Type Expected , "application/json" , received :: ' + requestContentType);
@@ -194,7 +215,18 @@ app.post('/people', function(request, response, next) {
     } catch (err) {
         return response.status(404).json({ error: err.message });
     }
+
 });
+
+
+var CreatePerson = function(req, res) {
+
+
+
+    // Use connect method to connect to the Server
+
+
+}
 
 app.post('/people/batch', function(request, response, next) {
 
@@ -204,15 +236,32 @@ app.post('/people/batch', function(request, response, next) {
 
         if (requestContentType == "application/json") {
 
-            var people = request.body;
 
-            Object.keys(people).map(function(key) {
+            var people = Object.keys(request.body).map(function(key) {
 
-                return people[key];
+                return request.body[key];
 
-            }).forEach(addPersonToDatabase)
+            })
 
-            return response.status(200).json("people added");
+            var createPeople = function(db, people, callback) {
+                    // Get the documents collection
+                    var collection = db.collection(peopleCollection);
+                    // Find some documents
+                    collection.insert(people, function(err, result) {
+                        callback(err, result);
+                    });
+                } //createPeople
+
+            MongoClient.connect(mongoUrl, function(err, db) {
+                if (err) throw err;
+                //console.log("Connected correctly to server");
+                createPeople(db, people,function(err, docs) {
+                    if (err) throw err;
+
+                    response.status(200).json(docs.ops)
+                    db.close();
+                }); //insert method
+            }); //mongo connect
 
         } else {
             throw new Error('Wrong Content-Type Expected , "application/json" , received :: ' + requestContentType);
@@ -221,6 +270,8 @@ app.post('/people/batch', function(request, response, next) {
     } catch (err) {
         return response.status(404).json({ error: err.message });
     }
+
+
 });
 
 /**
@@ -231,29 +282,52 @@ app.get('/degrees', function(request, response, next) {
 
 
     try {
-        var peopleList = Object.keys(database.people).map((key) => database.people[key])
-
         var query = request.query;
+
 
         if (!query.source)
             throw new Error(' no source id');
 
-        var personOne = peopleList.filter((person) => person.id == query.source)
-
-        if (personOne.length == 0)
-            throw new Error('source person not found');
-
         if (!query.destination)
             throw new Error(' no destination id');
 
-        var personTwo = peopleList.filter((person) => person.id == query.destination)
+        var getPeople = function(db, id1, id2, callback) {
+            // Get the documents collection
+            var collection = db.collection(peopleCollection);
+            // Find some documents
+            //{ $or: [{ _id: new ObjectId(id1) }, { _id: new ObjectId(id2) }] }
+            collection.find({}).toArray(function(err, docs) {
+                console.dir(err, docs);
+                callback(docs);
+            });
+        }
 
-        if (personTwo.length == 0)
-            throw new Error('destination person not found');
+        MongoClient.connect(mongoUrl, function(err, db) {
+            if (err) throw err;
+            //console.log("Connected correctly to server");
+            getPeople(db, query.source, query.destination, function(err, docs) {
+                if (err) throw err;
 
-        var degreeOfSeperation = Degrees.getDegreesBetween(personOne[0], personTwo[0], peopleList)
+                var peopleList = docs
 
-        return response.status(200).json(degreeOfSeperation);
+                var personOne = peopleList.filter((person) => person._id == query.source)
+
+                if (personOne.length == 0)
+                    throw new Error('source person not found');
+
+                var personTwo = peopleList.filter((person) => person._id == query.destination)
+
+                if (personTwo.length == 0)
+                    throw new Error('destination person not found');
+
+                var degreeOfSeperation = Degrees.getDegreesBetween(personOne[0], personTwo[0], peopleList)
+
+                var result = JSON.stringify(docs);
+                response.status(200).json(docs)
+                db.close();
+            }); //insert method
+        }); //mongo connect
+
 
     } catch (err) {
         return response.status(404).json({ error: err.message });
@@ -267,11 +341,28 @@ app.get('/degrees', function(request, response, next) {
  * Returns a list of all of the people in the database.
  */
 app.get('/people', function(request, response, next) {
-    return response.json(
-        Object.keys(database.people).map(function(id) {
-            return database.people[id]
-        })
-    );
+
+
+    var getPeople = function(db, callback) {
+        // Get the documents collection
+        var collection = db.collection(peopleCollection);
+        // Find some documents
+        collection.find().toArray(function(err, docs) {
+            console.dir(docs);
+            callback(docs);
+        });
+    }
+
+    MongoClient.connect(mongoUrl, function(err, db) {
+        if (err) throw err;
+        //console.log("Connected correctly to server");
+        getPeople(db, function(docs) {
+            var result = JSON.stringify(docs);
+            response.status(200).json(docs)
+            db.close();
+        }); //insert method
+    }); //mongo connect
+
 });
 
 /**
@@ -280,14 +371,33 @@ app.get('/people', function(request, response, next) {
  */
 app.get('/people/:id', function(request, response, next) {
     var id = request.params.id;
-    var person = database.people[id];
 
-    // Return 404 if the person isn't in the database.
-    if (person === null || person === undefined)
-        return response.status(404).send("Sorry, a person with that id isn't in the database.");
 
-    // Otherwise, return the person.
-    return response.json(person);
+    var getPersonById = function(db, id, callback) {
+        // Get the documents collection
+        var collection = db.collection(peopleCollection);
+        // Find some documents
+        collection.find({ _id: new ObjectId(id) }).toArray(function(err, docs) {
+            console.dir(docs);
+            callback(docs);
+        });
+    }
+
+    MongoClient.connect(mongoUrl, function(err, db) {
+        if (err) throw err;
+        //console.log("Connected correctly to server");
+        getPersonById(db, id, function(docs) {
+
+            // Return 404 if the person isn't in the database.
+            if (docs === null || docs.length == 0)
+                return response.status(404).send("Sorry, a person with that id isn't in the database.");
+
+            response.status(200).json(docs[0])
+            db.close();
+        }); //insert method
+    }); //mongo connect
+
+
 });
 
 // Middleware to catch any 404s
