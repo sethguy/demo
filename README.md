@@ -46,3 +46,8 @@ node src/server.js
 # Run the client.
 node src/client.js
 ```
+
+################### NOTE ######################
+# set "module.exports.ip" in src/contants.js #
+# to ip of docker host                       #
+###
